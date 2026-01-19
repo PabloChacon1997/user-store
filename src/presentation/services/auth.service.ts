@@ -1,4 +1,4 @@
-import { bcrytpAdapter } from "../../config";
+import { bcrytpAdapter, JwtAdapter } from "../../config";
 import { UserModel } from "../../data";
 import { CustomError, LoginUserDto, RegisterUserDto, UserEntity } from "../../domain";
 
@@ -38,9 +38,12 @@ export class AuthService {
     const isMatching = bcrytpAdapter.compare(loginUserDto.password, user.password);
     if (!isMatching) throw CustomError.badRequest('Password is not valid');
     const {password, ...userEntity} = UserEntity.fromObject(user);
+
+    const token = await JwtAdapter.generateToken({ id: user.id });
+    if (!token) throw CustomError.internalServer('Error while creatin jwt');
     return {
       user: userEntity,
-      token: 'ABC'
+      token,
     }
   }
 }
